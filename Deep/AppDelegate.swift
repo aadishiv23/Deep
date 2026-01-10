@@ -20,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Sets up the panel and global hotkey after the app launches.
     /// - Parameter notification: The launch notification from the system.
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppLogger.info("Application did finish launching", category: .app)
         setupPanel()
         setupHotKey()
         setupMenuBar()
@@ -27,6 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     
     /// Creates and configures the floating panel that hosts the SwiftUI root view.
     private func setupPanel() {
+        AppLogger.info("Setting up spotlight panel", category: .ui)
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 640, height: 360),
             styleMask: [.titled, .fullSizeContentView],
@@ -52,12 +54,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     
     /// Registers the Cmd+Shift+Space global hotkey using Carbon APIs.
     private func setupHotKey() {
+        AppLogger.info("Registering global hotkey", category: .app)
         var eventType = EventTypeSpec(
             eventClass: OSType(kEventClassKeyboard),
             eventKind: OSType(kEventHotKeyPressed)
         )
 
-        InstallEventHandler(
+        let handlerStatus = InstallEventHandler(
         GetApplicationEventTarget(),
             { _, _, userData -> OSStatus in
                 let delegate = Unmanaged<AppDelegate>
@@ -71,9 +74,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             Unmanaged.passUnretained(self).toOpaque(),
             nil
         )
+        if handlerStatus != noErr {
+            AppLogger.error("Failed to install hotkey handler: \(handlerStatus)", category: .app)
+        }
 
         var hotKeyID = EventHotKeyID(signature: OSType(0x44454550), id: 1) // "DEEP"
-        RegisterEventHotKey(
+        let hotKeyStatus = RegisterEventHotKey(
             UInt32(kVK_Space),
             UInt32(cmdKey | shiftKey),
             hotKeyID,
@@ -81,11 +87,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             0,
             &hotKeyRef
         )
+        if hotKeyStatus != noErr {
+            AppLogger.error("Failed to register hotkey: \(hotKeyStatus)", category: .app)
+        }
     }
     
     /// Shows and activates the panel.
     private func showPanel() {
-        guard let panel else { return }
+        guard let panel else {
+            AppLogger.warning("Show panel called before panel setup", category: .ui)
+            return
+        }
+        AppLogger.info("Showing panel", category: .ui)
         panel.center()
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true) // TODO: this iwll be deprecated in future
@@ -94,20 +107,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     
     /// Hides the panel without terminating the app.
     private func hidePanel() {
+        if panel == nil {
+            AppLogger.warning("Hide panel called before panel setup", category: .ui)
+        }
+        AppLogger.info("Hiding panel", category: .ui)
         panel?.orderOut(nil)
     }
     
     /// Toggles the panel visibility.
     private func togglePanel() {
         if panel?.isVisible == true {
+            AppLogger.info("Toggling panel to hidden", category: .ui)
             hidePanel()
         } else {
+            AppLogger.info("Toggling panel to visible", category: .ui)
             showPanel()
         }
     }
 
     /// Creates a menu bar icon to show or quit the app when it's hidden from the Dock.
     private func setupMenuBar() {
+        AppLogger.info("Setting up menu bar item", category: .ui)
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         
         if let button = statusItem?.button {
@@ -115,6 +135,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 systemSymbolName: "magnifyingglass",
                 accessibilityDescription: "Deep"
             )
+        } else {
+            AppLogger.warning("Menu bar button not available", category: .ui)
         }
         
         let menu = NSMenu()
@@ -126,6 +148,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc private func togglePanelFromMenu() {
+        AppLogger.info("Menu bar toggle invoked", category: .ui)
         togglePanel()
     }
 }

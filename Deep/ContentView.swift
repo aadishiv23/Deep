@@ -26,9 +26,11 @@ struct ContentView: View {
         }
         .padding()
         .onAppear {
+            AppLogger.info("Content view appeared; focusing search field", category: .ui)
             isSearchFocused = true
         }
         .onChange(of: appState.focusSearchTrigger) { _ in
+            AppLogger.info("Focus trigger updated; focusing search field", category: .ui)
             isSearchFocused = true
         }
     }

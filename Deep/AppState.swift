@@ -19,7 +19,11 @@ final class AppState {
     }
     
     /// The current mode driving the root view.
-    var mode: Mode = .main
+    var mode: Mode = .main {
+        didSet {
+            AppLogger.info("Mode changed: \(oldValue) -> \(mode)", category: .app)
+        }
+    }
 
     /// Bumps when the panel should focus the primary search field.
     var focusSearchTrigger: Int = 0
