@@ -5,7 +5,6 @@
 //  Created by Aadi Shiv Malhotra on 1/10/26.
 //
 
-import Foundation
 import Observation
 
 /// Global app state for deciding which root-level view to present.
