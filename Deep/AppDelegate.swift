@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     
     private var panel: NSPanel?
     private var hotKeyRef: EventHotKeyRef?
+    private var statusItem: NSStatusItem?
     private let appState = AppState()
     
     /// Sets up the panel and global hotkey after the app launches.
@@ -21,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupPanel()
         setupHotKey()
+        setupMenuBar()
     }
     
     /// Creates and configures the floating panel that hosts the SwiftUI root view.
@@ -87,6 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.center()
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true) // TODO: this iwll be deprecated in future
+        appState.focusSearchTrigger += 1
     }
     
     /// Hides the panel without terminating the app.
@@ -101,5 +104,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             showPanel()
         }
+    }
+
+    /// Creates a menu bar icon to show or quit the app when it's hidden from the Dock.
+    private func setupMenuBar() {
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        
+        if let button = statusItem?.button {
+            button.image = NSImage(
+                systemSymbolName: "magnifyingglass",
+                accessibilityDescription: "Deep"
+            )
+        }
+        
+        let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "Show Deep", action: #selector(togglePanelFromMenu), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit Deep", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        
+        statusItem?.menu = menu
+    }
+    
+    @objc private func togglePanelFromMenu() {
+        togglePanel()
     }
 }

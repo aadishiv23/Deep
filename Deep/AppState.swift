@@ -20,4 +20,7 @@ final class AppState {
     
     /// The current mode driving the root view.
     var mode: Mode = .main
+
+    /// Bumps when the panel should focus the primary search field.
+    var focusSearchTrigger: Int = 0
 }
