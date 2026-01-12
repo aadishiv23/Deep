@@ -11,27 +11,25 @@ import SwiftUI
 
 /// Manages the spotlight-style panel and global hotkey lifecycle.
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    
+
     private var panel: NSPanel?
     private var hotKeyRef: EventHotKeyRef?
-    private var statusItem: NSStatusItem?
     private let appState = AppState()
-    
+
     /// Sets up the panel and global hotkey after the app launches.
     /// - Parameter notification: The launch notification from the system.
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppLogger.info("Application did finish launching", category: .app)
         setupPanel()
         setupHotKey()
-        setupMenuBar()
     }
     
     /// Creates and configures the floating panel that hosts the SwiftUI root view.
     private func setupPanel() {
         AppLogger.info("Setting up spotlight panel", category: .ui)
-        let panel = NSPanel(
+        let panel = SpotlightPanel(
             contentRect: NSRect(x: 0, y: 0, width: 640, height: 360),
-            styleMask: [.titled, .fullSizeContentView],
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
@@ -39,9 +37,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.isFloatingPanel = true
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        panel.titleVisibility = .hidden
-        panel.titlebarAppearsTransparent = true
+        panel.backgroundColor = .clear
+        panel.isOpaque = false
         panel.hasShadow = true
+        panel.isMovableByWindowBackground = true
         
         let rootView = RootView { [weak self] in
             self?.hidePanel()
@@ -78,7 +77,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             AppLogger.error("Failed to install hotkey handler: \(handlerStatus)", category: .app)
         }
 
-        var hotKeyID = EventHotKeyID(signature: OSType(0x44454550), id: 1) // "DEEP"
+        let hotKeyID = EventHotKeyID(signature: OSType(0x44454550), id: 1) // "DEEP"
         let hotKeyStatus = RegisterEventHotKey(
             UInt32(kVK_Space),
             UInt32(cmdKey | shiftKey),
@@ -102,6 +101,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.center()
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true) // TODO: this iwll be deprecated in future
+        appState.isPanelVisible = true
         appState.focusSearchTrigger += 1
     }
     
@@ -112,6 +112,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         AppLogger.info("Hiding panel", category: .ui)
         panel?.orderOut(nil)
+        appState.isPanelVisible = false
     }
     
     /// Toggles the panel visibility.
@@ -125,30 +126,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// Creates a menu bar icon to show or quit the app when it's hidden from the Dock.
-    private func setupMenuBar() {
-        AppLogger.info("Setting up menu bar item", category: .ui)
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        
-        if let button = statusItem?.button {
-            button.image = NSImage(
-                systemSymbolName: "magnifyingglass",
-                accessibilityDescription: "Deep"
-            )
+    // MARK: - Public Menu Actions
+
+    /// Called from MenuBarExtra to show/toggle the panel
+    func showPanelFromMenu() {
+        AppLogger.info("Menu bar show panel invoked", category: .ui)
+        if panel?.isVisible == true {
+            hidePanel()
         } else {
-            AppLogger.warning("Menu bar button not available", category: .ui)
+            showPanel()
         }
-        
-        let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Show Deep", action: #selector(togglePanelFromMenu), keyEquivalent: ""))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit Deep", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
-        
-        statusItem?.menu = menu
     }
-    
-    @objc private func togglePanelFromMenu() {
-        AppLogger.info("Menu bar toggle invoked", category: .ui)
-        togglePanel()
+
+    /// Called from MenuBarExtra to toggle debug mode
+    func toggleDebugFromMenu() {
+        AppLogger.info("Menu bar debug toggle invoked", category: .ui)
+        if appState.mode == .debug {
+            appState.exitDebug()
+        } else {
+            appState.enterDebug()
+            showPanel()
+        }
+    }
+
+    /// Called from MenuBarExtra to reset setup
+    func resetSetupFromMenu() {
+        AppLogger.warning("Menu bar reset setup invoked", category: .app)
+        appState.resetSetup()
+        showPanel()
     }
 }

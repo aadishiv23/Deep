@@ -13,25 +13,38 @@ struct ContentView: View {
     @State private var query: String = ""
 
     var body: some View {
-        VStack(spacing: 16) {
-            TextField("Search...", text: $query)
-                .textFieldStyle(.roundedBorder)
-                .font(.title2)
-                .focused($isSearchFocused)
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
 
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            TextField("Deep", text: $query)
+                .textFieldStyle(.plain)
+                .font(.system(size: 20, weight: .medium))
+                .focused($isSearchFocused)
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(minWidth: 520)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(.regularMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color.white.opacity(0.15))
+        )
         .padding()
         .onAppear {
-            AppLogger.info("Content view appeared; focusing search field", category: .ui)
-            isSearchFocused = true
+            if appState.isPanelVisible {
+                AppLogger.info("Content view appeared; focusing search field", category: .ui)
+                isSearchFocused = true
+            }
         }
         .onChange(of: appState.focusSearchTrigger) { _ in
-            AppLogger.info("Focus trigger updated; focusing search field", category: .ui)
-            isSearchFocused = true
+            if appState.isPanelVisible {
+                AppLogger.info("Focus trigger updated; focusing search field", category: .ui)
+                isSearchFocused = true
+            }
         }
     }
 }

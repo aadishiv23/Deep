@@ -28,13 +28,13 @@ struct RootView: View {
         Group {
             switch appState.mode {
             case .debug:
-                Text("Debug")
+                DebugView()
                 
             case .main:
                 ContentView()
                 
             case .setup:
-                Text("Setup")
+                SetupView()
             }
         }
         .padding()
