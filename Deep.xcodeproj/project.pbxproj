@@ -24,6 +24,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9C2A3E842F5B1A9900F2F9A1 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
+		9C2A3E852F5B1A9900F2F9A1 /* MODELS.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = MODELS.md; sourceTree = "<group>"; };
+		9C2A3E862F5B1A9900F2F9A1 /* PHASES.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = PHASES.md; sourceTree = "<group>"; };
+		9C2A3E872F5B1A9900F2F9A1 /* PLAN.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = PLAN.md; sourceTree = "<group>"; };
+		9C2A3E882F5B1A9900F2F9A1 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = README.md; sourceTree = "<group>"; };
+		9C2A3E892F5B1A9900F2F9A1 /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = TODO.md; sourceTree = "<group>"; };
 		AC77EA0B2F05E07F00FE98E9 /* Deep.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Deep.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC77EA182F05E08100FE98E9 /* DeepTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeepTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC77EA222F05E08100FE98E9 /* DeepUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeepUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +81,12 @@
 		AC77EA022F05E07F00FE98E9 = {
 			isa = PBXGroup;
 			children = (
+				9C2A3E842F5B1A9900F2F9A1 /* CLAUDE.md */,
+				9C2A3E852F5B1A9900F2F9A1 /* MODELS.md */,
+				9C2A3E862F5B1A9900F2F9A1 /* PHASES.md */,
+				9C2A3E872F5B1A9900F2F9A1 /* PLAN.md */,
+				9C2A3E882F5B1A9900F2F9A1 /* README.md */,
+				9C2A3E892F5B1A9900F2F9A1 /* TODO.md */,
 				AC77EA0D2F05E07F00FE98E9 /* Deep */,
 				AC77EA1B2F05E08100FE98E9 /* DeepTests */,
 				AC77EA252F05E08100FE98E9 /* DeepUITests */,
@@ -399,8 +411,22 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8VNWQXUY4G;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_FILE_ACCESS_DOWNLOADS_FOLDER = readonly;
+				ENABLE_FILE_ACCESS_MOVIES_FOLDER = readonly;
+				ENABLE_FILE_ACCESS_MUSIC_FOLDER = readonly;
+				ENABLE_FILE_ACCESS_PICTURE_FOLDER = readonly;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = YES;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = YES;
+				ENABLE_RESOURCE_ACCESS_LOCATION = YES;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -432,8 +458,22 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8VNWQXUY4G;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_FILE_ACCESS_DOWNLOADS_FOLDER = readonly;
+				ENABLE_FILE_ACCESS_MOVIES_FOLDER = readonly;
+				ENABLE_FILE_ACCESS_MUSIC_FOLDER = readonly;
+				ENABLE_FILE_ACCESS_PICTURE_FOLDER = readonly;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = YES;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = YES;
+				ENABLE_RESOURCE_ACCESS_LOCATION = YES;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;

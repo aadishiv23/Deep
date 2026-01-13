@@ -41,7 +41,7 @@ struct ContentView: View {
                 focusSearchField()
             }
         }
-        .onChange(of: appState.focusSearchTrigger) { _ in
+        .onChange(of: appState.focusSearchTrigger) { _, _ in
             if appState.isPanelVisible {
                 AppLogger.info("Focus trigger updated; focusing search field", category: .ui)
                 focusSearchField()

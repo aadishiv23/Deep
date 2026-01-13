@@ -12,69 +12,111 @@ struct SettingsView: View {
     @AppStorage(SettingsKeys.showMenuBarIcon) private var showMenuBarIcon = true
     @AppStorage(SettingsKeys.showDebugTools) private var showDebugTools = false
 
-    // Add this
     @State private var indexingStore = IndexingStore.shared
 
     var body: some View {
-        Form {
-          Section("General") {
-              Toggle("Launch at Login", isOn: $launchAtLogin)
-              Toggle("Show Menu Bar Icon", isOn: $showMenuBarIcon)
-          }
+        TabView {
+            generalTab
+                .tabItem { Label("General", systemImage: "gearshape") }
 
-          Section("Hotkey") {
-              HStack {
-                  Text("Toggle search")
-                  Spacer()
-                  Text("⌘⇧Space")
-                      .foregroundStyle(.secondary)
-              }
-          }
+            indexingTab
+                .tabItem { Label("Indexing", systemImage: "tray.full") }
 
-          // Add this section
-          Section("Indexing") {
-              VStack(alignment: .leading, spacing: 8) {
-                  ForEach(indexingStore.paths) { path in
-                      HStack {
-                          Toggle(isOn: Binding(
-                              get: { path.isEnabled },
-                              set: { _ in indexingStore.togglePath(path) }
-                          )) {
-                              VStack(alignment: .leading, spacing: 2) {
-                                  Text(path.displayName)
-                                      .font(.body)
-                                  Text(path.path)
-                                      .font(.caption)
-                                      .foregroundStyle(.secondary)
-                              }
-                          }
-
-                          Spacer()
-
-                          Button(action: {
-                              indexingStore.removePath(path)
-                          }) {
-                              Image(systemName: "minus.circle.fill")
-                                  .foregroundStyle(.red)
-                          }
-                          .buttonStyle(.plain)
-                      }
-                      .padding(.vertical, 4)
-                  }
-
-                  Button("Add Folder...") {
-                      selectFolder()
-                  }
-              }
-          }
-
-          Section("Developer") {
-              Toggle("Show Debug Tools", isOn: $showDebugTools)
-          }
+            developerTab
+                .tabItem { Label("Developer", systemImage: "wrench.and.screwdriver") }
         }
-        .padding(20)
-        .frame(minWidth: 500, idealWidth: 600, maxWidth: .infinity,
-               minHeight: 400, idealHeight: 500, maxHeight: .infinity)
+        .scenePadding()
+        .frame(minWidth: 520, idealWidth: 620, minHeight: 420, idealHeight: 520)
+    }
+
+    private var generalTab: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Form {
+                Section("General") {
+                    Toggle("Launch at Login", isOn: $launchAtLogin)
+                    Toggle("Show Menu Bar Icon", isOn: $showMenuBarIcon)
+                }
+
+                Section {
+                    LabeledContent("Toggle search") {
+                        Text("⌘⇧Space")
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("Hotkey")
+                } footer: {
+                    Text("Hotkey customization is coming soon.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .formStyle(.grouped)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var indexingTab: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Form {
+                Section {
+                    if indexingStore.paths.isEmpty {
+                        Text("No folders added yet.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(indexingStore.paths) { path in
+                            HStack(alignment: .top, spacing: 12) {
+                                Toggle(isOn: Binding(
+                                    get: { path.isEnabled },
+                                    set: { _ in indexingStore.togglePath(path) }
+                                )) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(path.displayName)
+                                            .font(.body)
+                                        Text(path.path)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+
+                                Spacer()
+
+                                Button {
+                                    indexingStore.removePath(path)
+                                } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                        .foregroundStyle(.red)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                } header: {
+                    Text("Indexed Folders")
+                } footer: {
+                    Button("Add Folder…") {
+                        selectFolder()
+                    }
+                }
+            }
+            .formStyle(.grouped)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var developerTab: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Form {
+                Section("Developer") {
+                    Toggle("Show Debug Tools", isOn: $showDebugTools)
+                }
+            }
+            .formStyle(.grouped)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     /// Opens a folder picker and adds the selected path to indexing
@@ -90,4 +132,3 @@ struct SettingsView: View {
         }
     }
 }
-
