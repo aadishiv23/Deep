@@ -19,7 +19,7 @@ struct ContentView: View {
 
             TextField("Deep", text: $query)
                 .textFieldStyle(.plain)
-                .font(.system(size: 20, weight: .medium))
+                .font(.system(size: 22, weight: .medium))
                 .focused($isSearchFocused)
 
             SettingsLink {
@@ -29,17 +29,11 @@ struct ContentView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
+        .frame(minHeight: 52)
         .frame(minWidth: 520)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(.regularMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(Color.white.opacity(0.15))
-        )
+        .glassEffect()
         .padding()
         .onAppear {
             if appState.isPanelVisible {
