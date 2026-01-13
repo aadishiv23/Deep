@@ -21,6 +21,13 @@ struct ContentView: View {
                 .textFieldStyle(.plain)
                 .font(.system(size: 20, weight: .medium))
                 .focused($isSearchFocused)
+
+            SettingsLink {
+                Image(systemName: "gearshape")
+                    .foregroundStyle(.secondary)
+                    .font(.system(size: 16, weight: .medium))
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -37,14 +44,20 @@ struct ContentView: View {
         .onAppear {
             if appState.isPanelVisible {
                 AppLogger.info("Content view appeared; focusing search field", category: .ui)
-                isSearchFocused = true
+                focusSearchField()
             }
         }
         .onChange(of: appState.focusSearchTrigger) { _ in
             if appState.isPanelVisible {
                 AppLogger.info("Focus trigger updated; focusing search field", category: .ui)
-                isSearchFocused = true
+                focusSearchField()
             }
+        }
+    }
+
+    private func focusSearchField() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
+            isSearchFocused = true
         }
     }
 }

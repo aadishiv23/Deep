@@ -27,11 +27,20 @@ struct DeepApp: App {
             }
 
             Divider()
+            
+            SettingsLink {
+                Text("Preferences…")
+            }
+            .keyboardShortcut(",", modifiers: .command)
 
             Button("Quit Deep") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")
+        }
+        
+        Settings {
+            SettingsView()
         }
     }
 }
