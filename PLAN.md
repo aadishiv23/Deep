@@ -1,5 +1,13 @@
 # Deep Plan
 
+**Note**: This document has been superseded by `PHASES.md` which contains the complete roadmap.
+
+See `TODO.md` for current in-progress tasks.
+
+---
+
+## Legacy Plan (Historical Reference)
+
 This plan builds from the current Spotlight-style shell and the earlier LightSpot
 roadmap/skeleton references provided in `/Users/aadishivmalhotra/Downloads/ROADMAP.md`
 and `/Users/aadishivmalhotra/Downloads/REBUILD_SKELETON.md`. It focuses first on

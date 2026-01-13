@@ -42,5 +42,7 @@ struct DeepApp: App {
         Settings {
             SettingsView()
         }
+        .defaultSize(width: 600, height: 500)
+        .windowResizability(.contentSize)
     }
 }

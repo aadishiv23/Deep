@@ -36,7 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
         panel.isFloatingPanel = true
         panel.level = .floating
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.collectionBehavior = [.fullScreenAuxiliary, .moveToActiveSpace]
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = true
@@ -99,8 +99,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         AppLogger.info("Showing panel", category: .ui)
         panel.center()
+        NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
         panel.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true) // TODO: this iwll be deprecated in future
+        panel.orderFrontRegardless()
         appState.isPanelVisible = true
         appState.focusSearchTrigger += 1
     }
