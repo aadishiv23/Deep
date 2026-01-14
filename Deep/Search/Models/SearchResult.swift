@@ -39,7 +39,7 @@ struct SearchResult: Identifiable, Hashable {
     /// For ranking
     let relevanceScore: Double
 
-    enum ResultType {
+    enum ResultType: String {
         case file
         case folder
         case application

@@ -33,6 +33,7 @@ extension DeepSearchView {
         
         /// Current search task for cancellation
         private var searchTask: Task<Void, Never>?
+    
         
         init(searchProvider: SearchProviding = StubSearchProvider()) {
             self.searchProvider = searchProvider
@@ -51,21 +52,22 @@ extension DeepSearchView {
         private func performSearch() async {
             /// Cancel previous search.
             searchTask?.cancel()
-            
+
             let currentQuery = trimmedQuery
-            
+
             guard !currentQuery.isEmpty else {
                 results = []
                 isSearching = false
                 return
             }
-            
+
+            // Set searching immediately to prevent flicker
+            isSearching = true
+
             searchTask = Task {
-                isSearching = true
-                
                 do {
                     let searchResults = try await searchProvider.search(query: currentQuery)
-                    
+
                     /// Only update if query hasn't changed
                     if currentQuery == trimmedQuery {
                         results = searchResults
@@ -74,7 +76,7 @@ extension DeepSearchView {
                     AppLogger.error("Search failed: \(error)", category: .search)
                     results = []
                 }
-                
+
                 isSearching = false
             }
         }

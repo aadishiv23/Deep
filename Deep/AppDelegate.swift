@@ -28,7 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupPanel() {
         AppLogger.info("Setting up spotlight panel", category: .ui)
         let panel = SpotlightPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 640, height: 360),
+            contentRect: NSRect(x: 0, y: 0, width: 750, height: 560),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false

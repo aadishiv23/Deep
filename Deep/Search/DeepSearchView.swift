@@ -18,6 +18,22 @@ struct DeepSearchView: View {
     /// The index of the item in search result.
     @State private var selectedIndex = 0
 
+    private var shouldShowDetail: Bool {
+        guard !viewModel.results.isEmpty else {
+            return false
+        }
+        let selected = viewModel.results[selectedIndex]
+
+        // Show detail for files, folders, documents
+        switch selected.type {
+        case .file, .folder, .document, .code, .image, .pdf:
+            return true
+        case .application:
+            return false
+            // Add more cases here as needed (Phase 6+)
+        }
+    }
+
     /// Closure to dismiss/hide the panel
     let onDismiss: () -> Void
 
@@ -37,7 +53,7 @@ struct DeepSearchView: View {
                         .padding(.horizontal, 12)
                         .transition(
                             .asymmetric(
-                                insertion: .opacity.combined(with: .offset(y: -10)),
+                                insertion: .opacity,
                                 removal: .opacity.combined(with: .scale(scale: 0.98, anchor: .top))
                             )
                         )
@@ -115,13 +131,41 @@ struct DeepSearchView: View {
     }
 
     private var resultsPanel: some View {
+        HStack(spacing: 0) {
+            // Left: Results list
+            resultsList
+                .frame(maxWidth: viewModel.results.isEmpty ? .infinity : 375)
+
+            // Right: Detail view (conditional)
+            if shouldShowDetail {
+                Divider()
+
+                resultDetailView
+                    .frame(width: 375)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
+        }
+        .frame(minHeight: 380, maxHeight: 480)
+        .background(
+            RoundedRectangle(cornerRadius: DesignSystem.Radius.deepSearchView, style: .continuous)
+                .fill(.regularMaterial)
+        )
+        .clipShape(RoundedRectangle(
+            cornerRadius: DesignSystem.Radius.deepSearchView,
+            style: .continuous
+        ))
+        .padding(.top, 6)
+    }
+
+    private var resultsList: some View {
         ScrollView {
             ScrollViewReader { proxy in
                 VStack(spacing: 0) {
                     if viewModel.results.isEmpty {
                         EmptyStateResult()
                     } else {
-                        ForEach(Array(viewModel.results.enumerated()), id: \.element) { index, result in
+                        ForEach(Array(viewModel.results.enumerated()), id: \.offset) { index, result
+                            in
                             ResultRow(
                                 sysName: result.type.icon,
                                 title: result.title,
@@ -130,7 +174,11 @@ struct DeepSearchView: View {
                             )
                             .id(index)
                             .onTapGesture {
+                                // Single tap: select
                                 selectedIndex = index
+                            }
+                            .onTapGesture(count: 2) {
+                                // Double tap: open and dismiss
                                 openFile(result)
                                 onDismiss()
                             }
@@ -144,17 +192,52 @@ struct DeepSearchView: View {
                 }
             }
         }
-        .frame(minHeight: 250, maxHeight: 450)
-        .background(
-            RoundedRectangle(cornerRadius: DesignSystem.Radius.deepSearchView, style: .continuous)
-                .fill(.regularMaterial)
-        )
-        .clipShape(RoundedRectangle(
-            cornerRadius: DesignSystem.Radius.deepSearchView,
-            style:
-            .continuous
-        ))
-        .padding(.top, 6) // gap between bar and panel
+    }
+
+    private var resultDetailView: some View {
+        Group {
+            if !viewModel.results.isEmpty {
+                let selectedResult = viewModel.results[selectedIndex]
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        // File name & path
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(selectedResult.title)
+                                .font(.system(size: 18, weight: .semibold))
+                            Text(selectedResult.path.path)
+                                .font(.system(size: 12))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
+                        }
+
+                        Divider()
+
+                        // Metadata
+                        VStack(alignment: .leading, spacing: 8) {
+                            DetailRow(label: "Modified", value: selectedResult.formattedModifiedDate)
+                            DetailRow(label: "Created", value: selectedResult.formattedCreatedDate)
+                            DetailRow(label: "Size", value: selectedResult.formattedSize)
+                            DetailRow(label: "Kind", value: selectedResult.type.rawValue.capitalized)
+                        }
+
+                        Divider()
+
+                        // Actions
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Actions")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                                .textCase(.uppercase)
+
+                            ActionButton(icon: "arrow.right.circle", label: "Open", shortcut: "↩")
+                            ActionButton(icon: "eye", label: "Quick Look", shortcut: "Space")
+                            ActionButton(icon: "folder", label: "Reveal in Finder", shortcut: "⌘R")
+                        }
+                    }
+                    .padding(16)
+                }
+            }
+        }
     }
 
     private func focusSearchField() {
@@ -208,7 +291,7 @@ struct SearchBarView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .frame(minWidth: 620)
+        .frame(minWidth: 675)
         .background(
             RoundedRectangle(cornerRadius: DesignSystem.Radius.deepSearchView, style: .continuous)
                 .fill(.regularMaterial)
@@ -279,6 +362,51 @@ struct ResultRow: View {
             Divider()
                 .padding(.leading, 44)
         }
+    }
+}
+
+// MARK: - Detail Row
+
+struct DetailRow: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .frame(width: 70, alignment: .leading)
+            Text(value)
+                .font(.system(size: 12))
+        }
+    }
+}
+
+// MARK: - Action Button
+
+struct ActionButton: View {
+    let icon: String
+    let label: String
+    let shortcut: String
+
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .frame(width: 20)
+            Text(label)
+                .font(.system(size: 13))
+            Spacer()
+            Text(shortcut)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.quaternary, in: RoundedRectangle(cornerRadius: 4))
+        }
+        .padding(.vertical, 4)
     }
 }
 
