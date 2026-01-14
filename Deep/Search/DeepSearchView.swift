@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Quartz
 
 struct DeepSearchView: View {
     @Environment(AppState.self) private var appState
@@ -14,17 +15,26 @@ struct DeepSearchView: View {
 
     @State private var viewModel: ViewModel
 
-    init() {
+    /// The index of the item in search result.
+    @State private var selectedIndex = 0
+
+    /// Closure to dismiss/hide the panel
+    let onDismiss: () -> Void
+
+    init(onDismiss: @escaping () -> Void) {
         self.viewModel = ViewModel()
+        self.onDismiss = onDismiss
     }
 
     var body: some View {
         VStack(spacing: 8) {
             searchBar
+                .padding(.horizontal, 12)
 
             Group {
                 if viewModel.hasQuery {
                     resultsPanel
+                        .padding(.horizontal, 12)
                         .transition(
                             .asymmetric(
                                 insertion: .opacity.combined(with: .offset(y: -10)),
@@ -41,10 +51,58 @@ struct DeepSearchView: View {
                 focusSearchField()
             }
         }
-        .onChange(of: appState.focusSearchTrigger) { _ in
+        .onChange(of: appState.focusSearchTrigger) { _,_in
             if appState.isPanelVisible {
                 focusSearchField()
             }
+        }
+        .onChange(of: viewModel.filteredResults) { _, _ in
+            selectedIndex = 0
+        }
+        .onKeyPress(.downArrow) {
+            guard !viewModel.filteredResults.isEmpty else {
+                return .ignored
+            }
+            if selectedIndex < viewModel.filteredResults.count - 1 {
+                selectedIndex += 1
+            }
+            return .handled
+        }
+        .onKeyPress(.upArrow) {
+            guard !viewModel.filteredResults.isEmpty else {
+                return .ignored
+            }
+            if selectedIndex > 0 {
+                selectedIndex -= 1
+            }
+            return .handled
+        }
+        .onKeyPress(.return) {
+            guard !viewModel.filteredResults.isEmpty else {
+                return .ignored
+            }
+            let selectedResult = viewModel.filteredResults[selectedIndex]
+            openFile(selectedResult)
+            onDismiss()
+            return .handled
+        }
+        .onKeyPress(.space) {
+            guard !viewModel.filteredResults.isEmpty else {
+                return .ignored
+            }
+            let selectedResult = viewModel.filteredResults[selectedIndex]
+            showQuickLook(for: selectedResult)
+            return .handled
+        }
+        .onKeyPress(keys: [.init("r")], phases: .down) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            guard !viewModel.filteredResults.isEmpty else { return .ignored }
+            let selectedResult = viewModel.filteredResults[selectedIndex]
+            revealInFinder(selectedResult)
+            return .handled
+        }
+        .onKeyPress(.escape) {
+            return .ignored
         }
     }
 
@@ -54,12 +112,29 @@ struct DeepSearchView: View {
 
     private var resultsPanel: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                if viewModel.filteredResults.isEmpty {
-                    EmptyStateResult()
-                } else {
-                    ForEach(viewModel.filteredResults, id: \.self) { title in
-                        ResultRow(sysName: "document", title: title)
+            ScrollViewReader { proxy in
+                VStack(spacing: 0) {
+                    if viewModel.filteredResults.isEmpty {
+                        EmptyStateResult()
+                    } else {
+                        ForEach(Array(viewModel.filteredResults.enumerated()), id: \.element) { index, title in
+                            ResultRow(
+                                sysName: "document",
+                                title: title,
+                                isSelected: index == selectedIndex
+                            )
+                            .id(index)
+                            .onTapGesture {
+                                selectedIndex = index
+                                openFile(title)
+                                onDismiss()
+                            }
+                        }
+                    }
+                }
+                .onChange(of: selectedIndex) { _, _ in
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        proxy.scrollTo(selectedIndex, anchor: .center)
                     }
                 }
             }
@@ -69,6 +144,11 @@ struct DeepSearchView: View {
             RoundedRectangle(cornerRadius: DesignSystem.Radius.deepSearchView, style: .continuous)
                 .fill(.regularMaterial)
         )
+        .clipShape(RoundedRectangle(
+            cornerRadius: DesignSystem.Radius.deepSearchView,
+            style:
+            .continuous
+        ))
         .padding(.top, 6) // gap between bar and panel
     }
 
@@ -76,6 +156,30 @@ struct DeepSearchView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
             isSearchFocused = true
         }
+    }
+
+    private func openFile(_ title: String) {
+        // For now with mock data, just log it
+        // TODO: Once we have real SearchResult with URLs, use:
+        // NSWorkspace.shared.open(url)
+        AppLogger.info("Opening: \(title)", category: .ui)
+    }
+
+    private func showQuickLook(for title: String) {
+        // TODO: Once we have real SearchResult with URLs:
+        // let panel = QLPreviewPanel.shared()
+        // if panel.isVisible {
+        //     panel.orderOut(nil)
+        // } else {
+        //     panel.makeKeyAndOrderFront(nil)
+        // }
+        AppLogger.info("Quick Look for: \(title)", category: .ui)
+    }
+
+    private func revealInFinder(_ title: String) {
+        // TODO: Once we have real SearchResult with URLs:
+        // NSWorkspace.shared.activateFileViewerSelecting([url])
+        AppLogger.info("Reveal in Finder: \(title)", category: .ui)
     }
 }
 
@@ -140,6 +244,8 @@ struct ResultRow: View {
     /// Title of RowItem.
     let title: String
 
+    let isSelected: Bool
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -151,6 +257,7 @@ struct ResultRow: View {
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
+            .background(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
 
             Divider()
                 .padding(.leading, 44)
@@ -159,5 +266,5 @@ struct ResultRow: View {
 }
 
 #Preview {
-    DeepSearchView()
+    DeepSearchView(onDismiss: {})
 }
