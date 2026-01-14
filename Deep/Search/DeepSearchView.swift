@@ -5,8 +5,8 @@
 //  Created by Aadi Shiv Malhotra on 12/31/25.
 //
 
-import SwiftUI
 import Quartz
+import SwiftUI
 
 struct DeepSearchView: View {
     @Environment(AppState.self) private var appState
@@ -51,25 +51,25 @@ struct DeepSearchView: View {
                 focusSearchField()
             }
         }
-        .onChange(of: appState.focusSearchTrigger) { _,_in
+        .onChange(of: appState.focusSearchTrigger) { _, _ in
             if appState.isPanelVisible {
                 focusSearchField()
             }
         }
-        .onChange(of: viewModel.filteredResults) { _, _ in
+        .onChange(of: viewModel.results) { _, _ in
             selectedIndex = 0
         }
         .onKeyPress(.downArrow) {
-            guard !viewModel.filteredResults.isEmpty else {
+            guard !viewModel.results.isEmpty else {
                 return .ignored
             }
-            if selectedIndex < viewModel.filteredResults.count - 1 {
+            if selectedIndex < viewModel.results.count - 1 {
                 selectedIndex += 1
             }
             return .handled
         }
         .onKeyPress(.upArrow) {
-            guard !viewModel.filteredResults.isEmpty else {
+            guard !viewModel.results.isEmpty else {
                 return .ignored
             }
             if selectedIndex > 0 {
@@ -78,31 +78,35 @@ struct DeepSearchView: View {
             return .handled
         }
         .onKeyPress(.return) {
-            guard !viewModel.filteredResults.isEmpty else {
+            guard !viewModel.results.isEmpty else {
                 return .ignored
             }
-            let selectedResult = viewModel.filteredResults[selectedIndex]
+            let selectedResult = viewModel.results[selectedIndex]
             openFile(selectedResult)
             onDismiss()
             return .handled
         }
         .onKeyPress(.space) {
-            guard !viewModel.filteredResults.isEmpty else {
+            guard !viewModel.results.isEmpty else {
                 return .ignored
             }
-            let selectedResult = viewModel.filteredResults[selectedIndex]
+            let selectedResult = viewModel.results[selectedIndex]
             showQuickLook(for: selectedResult)
             return .handled
         }
         .onKeyPress(keys: [.init("r")], phases: .down) { press in
-            guard press.modifiers.contains(.command) else { return .ignored }
-            guard !viewModel.filteredResults.isEmpty else { return .ignored }
-            let selectedResult = viewModel.filteredResults[selectedIndex]
+            guard press.modifiers.contains(.command) else {
+                return .ignored
+            }
+            guard !viewModel.results.isEmpty else {
+                return .ignored
+            }
+            let selectedResult = viewModel.results[selectedIndex]
             revealInFinder(selectedResult)
             return .handled
         }
         .onKeyPress(.escape) {
-            return .ignored
+            .ignored
         }
     }
 
@@ -114,19 +118,20 @@ struct DeepSearchView: View {
         ScrollView {
             ScrollViewReader { proxy in
                 VStack(spacing: 0) {
-                    if viewModel.filteredResults.isEmpty {
+                    if viewModel.results.isEmpty {
                         EmptyStateResult()
                     } else {
-                        ForEach(Array(viewModel.filteredResults.enumerated()), id: \.element) { index, title in
+                        ForEach(Array(viewModel.results.enumerated()), id: \.element) { index, result in
                             ResultRow(
-                                sysName: "document",
-                                title: title,
+                                sysName: result.type.icon,
+                                title: result.title,
+                                subtitle: result.subtitle,
                                 isSelected: index == selectedIndex
                             )
                             .id(index)
                             .onTapGesture {
                                 selectedIndex = index
-                                openFile(title)
+                                openFile(result)
                                 onDismiss()
                             }
                         }
@@ -158,14 +163,14 @@ struct DeepSearchView: View {
         }
     }
 
-    private func openFile(_ title: String) {
+    private func openFile(_ searchResult: SearchResult) {
         // For now with mock data, just log it
         // TODO: Once we have real SearchResult with URLs, use:
         // NSWorkspace.shared.open(url)
-        AppLogger.info("Opening: \(title)", category: .ui)
+        AppLogger.info("Opening: \(searchResult.title)", category: .ui)
     }
 
-    private func showQuickLook(for title: String) {
+    private func showQuickLook(for searchResult: SearchResult) {
         // TODO: Once we have real SearchResult with URLs:
         // let panel = QLPreviewPanel.shared()
         // if panel.isVisible {
@@ -173,13 +178,13 @@ struct DeepSearchView: View {
         // } else {
         //     panel.makeKeyAndOrderFront(nil)
         // }
-        AppLogger.info("Quick Look for: \(title)", category: .ui)
+        AppLogger.info("Quick Look for: \(searchResult.title)", category: .ui)
     }
 
-    private func revealInFinder(_ title: String) {
+    private func revealInFinder(_ searchResult: SearchResult) {
         // TODO: Once we have real SearchResult with URLs:
         // NSWorkspace.shared.activateFileViewerSelecting([url])
-        AppLogger.info("Reveal in Finder: \(title)", category: .ui)
+        AppLogger.info("Reveal in Finder: \(searchResult.title)", category: .ui)
     }
 }
 
@@ -244,15 +249,27 @@ struct ResultRow: View {
     /// Title of RowItem.
     let title: String
 
+    let subtitle: String
+
     let isSelected: Bool
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
+            HStack(spacing: 12) {
                 Image(systemName: sysName)
-                    .foregroundStyle(.secondary)
-                Text(title)
                     .font(.system(size: 16))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 20)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 16))
+
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+
                 Spacer()
             }
             .padding(.horizontal, 20)

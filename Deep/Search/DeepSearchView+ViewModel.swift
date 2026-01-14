@@ -14,19 +14,29 @@ extension DeepSearchView {
     final class ViewModel {
         
         /// The search query to be passed (eventually) to `SearchService`.
-        var query: String = ""
+        var query: String = "" {
+            didSet {
+                Task {
+                    await performSearch()
+                }
+            }
+        }
         
-        /// Array of mock results for testing.
-        private let mockResults = [
-            "Deep — Preferences",
-            "Project Notes",
-            "README.md",
-            "Design Spec",
-            "Invoices 2025",
-            "Meeting Notes",
-            "Tasks",
-            "Deep.app"
-        ]
+        /// The search results returned from the provider.
+        var results: [SearchResult] = []
+        
+        /// Whether a search is currently in progress.
+        var isSearching: Bool = false
+        
+        /// The search provider (injected for testing)
+        var searchProvider: SearchProviding
+        
+        /// Current search task for cancellation
+        private var searchTask: Task<Void, Never>?
+        
+        init(searchProvider: SearchProviding = StubSearchProvider()) {
+            self.searchProvider = searchProvider
+        }
         
         /// The search query trimmed of whitespaces and newlines.
         var trimmedQuery: String {
@@ -37,9 +47,36 @@ extension DeepSearchView {
             !trimmedQuery.isEmpty
         }
 
-        /// The mock results, filtered, containing the `trimmedQuery`
-        var filteredResults: [String] {
-            mockResults.filter { $0.localizedCaseInsensitiveContains(trimmedQuery) }
+        /// Performs the search async.
+        private func performSearch() async {
+            /// Cancel previous search.
+            searchTask?.cancel()
+            
+            let currentQuery = trimmedQuery
+            
+            guard !currentQuery.isEmpty else {
+                results = []
+                isSearching = false
+                return
+            }
+            
+            searchTask = Task {
+                isSearching = true
+                
+                do {
+                    let searchResults = try await searchProvider.search(query: currentQuery)
+                    
+                    /// Only update if query hasn't changed
+                    if currentQuery == trimmedQuery {
+                        results = searchResults
+                    }
+                } catch {
+                    AppLogger.error("Search failed: \(error)", category: .search)
+                    results = []
+                }
+                
+                isSearching = false
+            }
         }
     }
 }
