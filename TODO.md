@@ -50,10 +50,10 @@ The toggle exists but doesn't hide/show the "Toggle Debug" menu item.
 
 ## Phase 3: UI Polish (Upcoming)
 
-- Make ContentView look like actual Spotlight (blur, rounded corners, proper layout)
+- Make DeepSearchView look like actual Spotlight (blur, rounded corners, proper layout)
 - Add keyboard navigation for search results
 - Smooth animations on show/hide
-- Fix deprecation warning: `onChange(of:perform:)` in ContentView.swift:50
+- Fix deprecation warning: `onChange(of:perform:)` in DeepSearchView.swift:50
 
 ## Phase 4+: Search Architecture & Indexing
 

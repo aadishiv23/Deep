@@ -31,7 +31,7 @@ struct RootView: View {
                 DebugView()
                 
             case .main:
-                ContentView()
+                DeepSearchView()
                 
             case .setup:
                 SetupView()

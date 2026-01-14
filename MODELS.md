@@ -10,7 +10,7 @@ The core model representing a single search result item.
 // Deep/Models/SearchResult.swift
 struct SearchResult: Identifiable, Hashable {
     let id: UUID
-    let title: String           // "ContentView.swift"
+    let title: String           // "DeepSearchView.swift"
     let subtitle: String        // "Deep/Deep" (folder path)
     let path: URL               // Full file path
     let type: ResultType
@@ -57,9 +57,9 @@ extension SearchResult {
     static let mockResults: [SearchResult] = [
         SearchResult(
             id: UUID(),
-            title: "ContentView.swift",
+            title: "DeepSearchView.swift",
             subtitle: "Deep/Deep",
-            path: URL(fileURLWithPath: "/Users/.../Deep/ContentView.swift"),
+            path: URL(fileURLWithPath: "/Users/.../Deep/DeepSearchView.swift"),
             type: .code,
             modifiedDate: Date(),
             relevanceScore: 1.0

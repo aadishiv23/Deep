@@ -111,6 +111,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AC77EA2C2F05E08100FE98E9 /* Build configuration list for PBXNativeTarget "Deep" */;
 			buildPhases = (
+				9C2A3E9A2F5B1B0000F2F9A1 /* SwiftFormat */,
 				AC77EA072F05E07F00FE98E9 /* Sources */,
 				AC77EA082F05E07F00FE98E9 /* Frameworks */,
 				AC77EA092F05E07F00FE98E9 /* Resources */,
@@ -218,6 +219,24 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		9C2A3E9A2F5B1B0000F2F9A1 /* SwiftFormat */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = SwiftFormat;
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if command -v swiftformat >/dev/null 2>&1; then\n  swiftformat --config \"$SRCROOT/.swiftformat\" \"$SRCROOT\"\nelse\n  echo \"warning: SwiftFormat not installed. Run 'brew install swiftformat'\"\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXResourcesBuildPhase section */
 		AC77EA092F05E07F00FE98E9 /* Resources */ = {

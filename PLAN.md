@@ -70,7 +70,7 @@ Deliverables
 - Smooth show/hide animation
 
 Tasks
-- Refine `ContentView` layout for search-first interaction
+- Refine `DeepSearchView` layout for search-first interaction
 - Consider panel appearance tweaks:
   - `panel.isOpaque = false` and a custom background
   - `panel.titleVisibility = .hidden` (already done)

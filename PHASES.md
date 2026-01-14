@@ -96,7 +96,7 @@ High-level roadmap for building Deep into a unified search layer for macOS.
 
 **Architecture**:
 ```
-UI Layer:        ContentView → SearchViewModel
+UI Layer:        DeepSearchView → DeepSearchViewModel
 Business Layer:  SearchViewModel → SearchCoordinator → SearchService
 Data Layer:      SearchService → [SearchProvider] → Results
 ```

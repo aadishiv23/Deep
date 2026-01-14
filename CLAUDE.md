@@ -56,7 +56,7 @@ Deep/
 ├── AppDelegate.swift       # Panel lifecycle, hotkey registration
 ├── AppState.swift          # @Observable app state (setup/main/debug modes)
 ├── RootView.swift          # Root container, handles double-escape, mode switching
-├── ContentView.swift       # Main search UI
+├── DeepSearchView.swift    # Main search UI
 ├── SetupView.swift         # First-run onboarding
 ├── DebugView.swift         # Developer diagnostics
 ├── SpotlightPanel.swift    # Custom NSPanel with canBecomeKey override
