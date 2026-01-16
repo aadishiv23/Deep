@@ -28,7 +28,7 @@ struct SearchResult: Identifiable, Hashable {
     let type: ResultType
 
     /// Last date file was modified, for future recency sorting.
-    let modifiedDate: Date
+    var modifiedDate: Date
 
     /// File creation date (if available)
     let createdDate: Date
@@ -37,7 +37,7 @@ struct SearchResult: Identifiable, Hashable {
     let size: Int64
 
     /// For ranking
-    let relevanceScore: Double
+    var relevanceScore: Double
 
     enum ResultType: String {
         case file

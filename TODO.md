@@ -1,5 +1,21 @@
 # TODO
 
+## Current Status (Jan 13, 2026)
+
+**Completed Phases:**
+- ✅ Phase 0: Foundation
+- ✅ Phase 1: Setup + Debug Views
+- ✅ Phase 3: UI Polish
+- ✅ Phase 4: Search Architecture
+
+**In Progress:**
+- 🔄 Phase 2: Preferences (settings wiring remaining)
+
+**Next Up:**
+- ⏳ Phase 5: File Indexing
+
+---
+
 ## Phase 2: Preferences - Remaining Tasks
 
 ### 1. Wire Up "Launch at Login"
@@ -38,23 +54,57 @@ The toggle exists but doesn't hide/show the "Toggle Debug" menu item.
 - Conditionally show/hide the "Toggle Debug" button based on this value
 - May need to use `@State` or pass AppDelegate reference to observe changes
 
-### 4. UI Improvements
-**Status**: Needs polish
-**Priority**: Medium
+---
 
-**Changes**:
-- Increase window width from 240 to 400+ pixels (feels cramped)
-- Add `.frame(minWidth: 400, minHeight: 300)` to Settings scene for proper window constraints
-- Add footer/help text under "Hotkey" section: "Hotkey customization coming soon"
-- Consider adding app version number at bottom
+## Phase 5: File Indexing (Next Major Phase)
 
-## Phase 3: UI Polish (Upcoming)
+### 5.1: SQLite Foundation (First Priority)
+- Create `SearchStore` actor with thread-safe access
+- Design schema for files table + FTS5 full-text search
+- Migration system for schema updates
+- Basic CRUD operations
 
-- Make DeepSearchView look like actual Spotlight (blur, rounded corners, proper layout)
-- Add keyboard navigation for search results
-- Smooth animations on show/hide
-- Fix deprecation warning: `onChange(of:perform:)` in DeepSearchView.swift:50
+### 5.2: File Indexer
+- `FileIndexer` actor with streaming directory traversal
+- Read folders from `IndexingStore.shared.paths`
+- Metadata extraction (name, path, size, dates, UTI)
+- Content extraction for text files
+- Hash-based change detection (skip unchanged files)
+- Progress reporting
 
-## Phase 4+: Search Architecture & Indexing
+### 5.3: File Search Provider
+- Replace `StubSearchProvider` with `FileSearchProvider`
+- Query SQLite with FTS5
+- Ranking algorithm (recency, frequency, fuzzy match)
+- Return real files from disk
 
-Deferred until Phase 2 and 3 are complete.
+### 5.4: File Watcher (Later)
+- FSEvents integration
+- Incremental reindexing on file changes
+- Debouncing for rapid changes
+- Handle renames, moves, deletes
+
+---
+
+## Future Enhancements (Phase 6+)
+
+### Additional Search Providers
+- Applications (`.app` bundles)
+- System Preferences
+- Contacts (with permission)
+- Calendar events (with permission)
+- Browser bookmarks
+
+### UI Improvements
+- Quick Look preview implementation (currently stubbed)
+- File thumbnails in detail panel
+- Highlighted search matches in results
+- Syntax highlighting for code files
+- Custom icons per file type
+
+### Power User Features
+- Search filters (type:pdf, modified:today)
+- Search scopes (limit to specific folders)
+- Custom hotkey configuration
+- Exclude patterns (.git, node_modules)
+- Fuzzy matching improvements

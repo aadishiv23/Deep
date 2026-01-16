@@ -14,11 +14,13 @@ struct DeepSearchView: View {
     @FocusState private var isSearchFocused: Bool
 
     @State private var viewModel: ViewModel
+    @AppStorage(SettingsKeys.accentColorChoice) private var accentColorChoiceRaw = AccentColorPalette.defaultChoice.rawValue
+    @AppStorage(SettingsKeys.customAccentColorHex) private var customAccentColorHex = AccentColorPalette.defaultCustomHex
 
     /// The index of the item in search result.
     @State private var selectedIndex = 0
 
-    private var shouldShowDetail: Bool {
+    private var detailAvailable: Bool {
         guard !viewModel.results.isEmpty else {
             return false
         }
@@ -34,8 +36,25 @@ struct DeepSearchView: View {
         }
     }
 
+    private var shouldShowDetail: Bool {
+        detailAvailable && appState.isDetailPanelEnabled
+    }
+
+    private var accentColor: Color {
+        let choice = AccentColorChoice(rawValue: accentColorChoiceRaw) ?? AccentColorPalette.defaultChoice
+        return AccentColorPalette.color(for: choice, customHex: customAccentColorHex)
+    }
+
     /// Closure to dismiss/hide the panel
     let onDismiss: () -> Void
+
+    private enum Layout {
+        static let resultsListWidth: CGFloat = 375
+        static let detailWidth: CGFloat = 375
+        static let resultsPanelMinWidth: CGFloat = resultsListWidth + detailWidth
+        static let resultsPanelMinHeight: CGFloat = 380
+        static let resultsPanelMaxHeight: CGFloat = 480
+    }
 
     init(onDismiss: @escaping () -> Void) {
         self.viewModel = ViewModel()
@@ -121,31 +140,47 @@ struct DeepSearchView: View {
             revealInFinder(selectedResult)
             return .handled
         }
+        .onKeyPress(keys: [.init("d")], phases: .down) { press in
+            guard press.modifiers.contains(.command) else {
+                return .ignored
+            }
+            toggleDetailPanel()
+            return .handled
+        }
         .onKeyPress(.escape) {
             .ignored
         }
     }
 
     private var searchBar: some View {
-        SearchBarView(query: $viewModel.query)
+        SearchBarView(
+            query: $viewModel.query,
+            isDetailPanelEnabled: appState.isDetailPanelEnabled,
+            accentColor: accentColor,
+            onToggleDetail: toggleDetailPanel
+        )
     }
 
     private var resultsPanel: some View {
         HStack(spacing: 0) {
             // Left: Results list
             resultsList
-                .frame(maxWidth: viewModel.results.isEmpty ? .infinity : 375)
+                .frame(
+                    minWidth: shouldShowDetail ? Layout.resultsListWidth : Layout.resultsPanelMinWidth,
+                    maxWidth: shouldShowDetail ? Layout.resultsListWidth : Layout.resultsPanelMinWidth
+                )
 
             // Right: Detail view (conditional)
             if shouldShowDetail {
                 Divider()
 
                 resultDetailView
-                    .frame(width: 375)
+                    .frame(width: Layout.detailWidth)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
-        .frame(minHeight: 380, maxHeight: 480)
+        .frame(minWidth: Layout.resultsPanelMinWidth)
+        .frame(minHeight: Layout.resultsPanelMinHeight, maxHeight: Layout.resultsPanelMaxHeight)
         .background(
             RoundedRectangle(cornerRadius: DesignSystem.Radius.deepSearchView, style: .continuous)
                 .fill(.regularMaterial)
@@ -155,6 +190,7 @@ struct DeepSearchView: View {
             style: .continuous
         ))
         .padding(.top, 6)
+        .animation(.smooth(duration: 0.25), value: shouldShowDetail)
     }
 
     private var resultsList: some View {
@@ -170,7 +206,8 @@ struct DeepSearchView: View {
                                 sysName: result.type.icon,
                                 title: result.title,
                                 subtitle: result.subtitle,
-                                isSelected: index == selectedIndex
+                                isSelected: index == selectedIndex,
+                                accentColor: accentColor
                             )
                             .id(index)
                             .onTapGesture {
@@ -246,6 +283,12 @@ struct DeepSearchView: View {
         }
     }
 
+    private func toggleDetailPanel() {
+        withAnimation(.smooth(duration: 0.25)) {
+            appState.isDetailPanelEnabled.toggle()
+        }
+    }
+
     private func openFile(_ searchResult: SearchResult) {
         // For now with mock data, just log it
         // TODO: Once we have real SearchResult with URLs, use:
@@ -278,6 +321,10 @@ struct SearchBarView: View {
     /// The query that is being searched for.
     @Binding var query: String
 
+    let isDetailPanelEnabled: Bool
+    let accentColor: Color
+    let onToggleDetail: () -> Void
+
     @FocusState var isFocused: Bool
 
     var body: some View {
@@ -288,6 +335,8 @@ struct SearchBarView: View {
                 .textFieldStyle(.plain)
                 .font(.system(size: 22, weight: .medium))
                 .focused($isFocused)
+            Spacer(minLength: 8)
+            detailToggleButton
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
@@ -296,6 +345,33 @@ struct SearchBarView: View {
             RoundedRectangle(cornerRadius: DesignSystem.Radius.deepSearchView, style: .continuous)
                 .fill(.regularMaterial)
         )
+    }
+
+    private var detailToggleButton: some View {
+        Button {
+            onToggleDetail()
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: isDetailPanelEnabled ? "eye" : "eye.slash")
+                Text("Details")
+            }
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(isDetailPanelEnabled ? .primary : .secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(isDetailPanelEnabled ? accentColor.opacity(0.18) : Color.primary.opacity(0.06))
+            )
+            .overlay(
+                Capsule()
+                    .strokeBorder(Color.primary.opacity(0.08))
+            )
+        }
+        .buttonStyle(.plain)
+        .help("Toggle detail panel (⌘D)")
+        .accessibilityLabel(isDetailPanelEnabled ? "Hide details" : "Show details")
+        .accessibilityHint("Toggles the detail panel")
     }
 }
 
@@ -335,6 +411,7 @@ struct ResultRow: View {
     let subtitle: String
 
     let isSelected: Bool
+    let accentColor: Color
 
     var body: some View {
         VStack(spacing: 0) {
@@ -357,7 +434,7 @@ struct ResultRow: View {
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
-            .background(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
+            .background(isSelected ? accentColor.opacity(0.15) : Color.clear)
 
             Divider()
                 .padding(.leading, 44)

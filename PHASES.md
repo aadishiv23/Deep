@@ -61,50 +61,70 @@ High-level roadmap for building Deep into a unified search layer for macOS.
 
 ---
 
-## Phase 3: UI Polish
+## Phase 3: UI Polish ✅ COMPLETE
 
 **Goal**: Make the panel look and feel like Spotlight
 
 **Deliverables**:
-- Blur/vibrancy background with `VisualEffectBlur`
-- Rounded corners and proper shadows
-- Search field auto-focuses on show
-- Search results list with keyboard navigation
-- Smooth show/hide animations
-- Proper spacing, typography, and visual hierarchy
-- Fix deprecation warnings (onChange)
+- ✅ Blur/vibrancy background with `.regularMaterial`
+- ✅ Rounded corners (25pt radius) and proper shadows
+- ✅ Search field auto-focuses on show
+- ✅ Search results list with keyboard navigation (↑↓, Enter, Space, Cmd+R)
+- ✅ Smooth show/hide animations
+- ✅ Proper spacing, typography, and visual hierarchy
+- ✅ Inset/framed layout (12pt horizontal padding)
+- ✅ Split-view detail panel (conditional display based on result type)
+- ✅ Fixed panel size: 750x560
+- ✅ Fixed animations and flicker issues
 
-**Why This Before Architecture**:
-- UI defines the UX contract that search architecture must fulfill
-- Easier to build backend when you know exactly what frontend needs
-- Visual polish affects user perception more than anything else
+**What's Done**:
+- Keyboard navigation with selection highlighting
+- Quick Look preview (spacebar) - stubbed with logging
+- Reveal in Finder (Cmd+R) - stubbed with logging
+- Detail panel shows metadata: Modified, Created, Size, Kind
+- Detail panel shows actions: Open, Quick Look, Reveal in Finder
+- Results list stays fixed width (375px) when detail panel slides in
+- No flicker on empty results or during search
+- Single tap selects, double tap opens file
+
+**Status**: Complete. Ready for Phase 5 (real file indexing)
 
 ---
 
-## Phase 4: Search Architecture Foundation
+## Phase 4: Search Architecture Foundation ✅ COMPLETE
 
 **Goal**: Clean, testable search pipeline before real indexing
 
 **Deliverables**:
-- Domain / Data / Presentation layer separation
-- `SearchViewModel` (manages UI state)
-- `SearchCoordinator` (orchestrates providers)
-- `SearchService` (business logic layer)
-- `SearchProvider` protocol with cancellation support
-- `SearchQuery` and `UnifiedSearchResult` models
-- Stub providers returning fake data for testing
+- ✅ Domain / Data / Presentation layer separation
+- ✅ `SearchResult` model with metadata (title, subtitle, path, type, dates, size, relevance)
+- ✅ `SearchProvider` protocol with async search and cancellation
+- ✅ `StubSearchProvider` with realistic mock data
+- ✅ ViewModel with async search, task cancellation, and debouncing
+- ✅ Real data flowing through UI (no more mock strings)
 
 **Architecture**:
 ```
-UI Layer:        DeepSearchView → DeepSearchViewModel
-Business Layer:  SearchViewModel → SearchCoordinator → SearchService
-Data Layer:      SearchService → [SearchProvider] → Results
+UI Layer:        DeepSearchView → ViewModel
+Data Layer:      ViewModel → SearchProvider → [SearchResult]
 ```
 
+**What's Done**:
+- `SearchResult` with `ResultType` enum (file, folder, application, document, code, image, pdf)
+- `SearchProvider` protocol with `search(query:)` async throws
+- `StubSearchProvider` filtering mock results by query
+- ViewModel triggers search on query change via `didSet`
+- Async/await search with proper cancellation
+- `isSearching` state to prevent flicker
+- Helper methods for formatting (dates, file sizes)
+
+**Status**: Complete. Ready to swap `StubSearchProvider` for `FileSearchProvider` in Phase 5
+
 **Why This Matters**:
-- Search must be async, cancellable, and non-blocking
-- Multiple providers (files, apps, contacts) need unified interface
+- Search is async, cancellable, and non-blocking
+- Multiple providers (files, apps, contacts) can share the same interface
 - Testable with mocks before dealing with real file system
+- UI completely decoupled from data source
 
 ---
 

@@ -8,7 +8,7 @@
 import Foundation
 
 /// Protocol for search providers (files, apps, contacts, etc.)
-protocol SearchProviding {
+protocol SearchProviding: Sendable {
     /// The name of this provider (e.g., "Files", "Applications")
     var name: String { get }
 

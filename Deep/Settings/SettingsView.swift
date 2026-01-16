@@ -11,6 +11,8 @@ struct SettingsView: View {
     @AppStorage(SettingsKeys.launchAtLogin) private var launchAtLogin = false
     @AppStorage(SettingsKeys.showMenuBarIcon) private var showMenuBarIcon = true
     @AppStorage(SettingsKeys.showDebugTools) private var showDebugTools = false
+    @AppStorage(SettingsKeys.accentColorChoice) private var accentColorChoiceRaw = AccentColorPalette.defaultChoice.rawValue
+    @AppStorage(SettingsKeys.customAccentColorHex) private var customAccentColorHex = AccentColorPalette.defaultCustomHex
 
     @State private var indexingStore = IndexingStore.shared
 
@@ -35,6 +37,22 @@ struct SettingsView: View {
                 Section("General") {
                     Toggle("Launch at Login", isOn: $launchAtLogin)
                     Toggle("Show Menu Bar Icon", isOn: $showMenuBarIcon)
+                }
+
+                Section("Appearance") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Accent Color")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        accentColorGrid
+                        ColorPicker(
+                            "Custom Color",
+                            selection: customAccentColorBinding,
+                            supportsOpacity: false
+                        )
+                        accentColorPreview
+                    }
+                    .padding(.vertical, 4)
                 }
 
                 Section {
@@ -117,6 +135,104 @@ struct SettingsView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var selectedAccentChoice: AccentColorChoice {
+        AccentColorChoice(rawValue: accentColorChoiceRaw) ?? AccentColorPalette.defaultChoice
+    }
+
+    private var selectedAccentColor: Color {
+        AccentColorPalette.color(for: selectedAccentChoice, customHex: customAccentColorHex)
+    }
+
+    private var customAccentColorBinding: Binding<Color> {
+        Binding(
+            get: {
+                Color(hex: customAccentColorHex) ?? AccentColorPalette.fallbackColor
+            },
+            set: { newValue in
+                if let hex = newValue.hexString() {
+                    customAccentColorHex = hex
+                }
+                accentColorChoiceRaw = AccentColorChoice.custom.rawValue
+            }
+        )
+    }
+
+    private var accentColorGrid: some View {
+        let columns = [GridItem(.adaptive(minimum: 70), spacing: 10)]
+        return LazyVGrid(columns: columns, spacing: 10) {
+            ForEach(AccentColorPalette.presets) { preset in
+                let isSelected = preset.id == selectedAccentChoice
+                Button {
+                    accentColorChoiceRaw = preset.id.rawValue
+                } label: {
+                    VStack(spacing: 6) {
+                        Circle()
+                            .fill(preset.color)
+                            .frame(width: 20, height: 20)
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(Color.primary.opacity(isSelected ? 0.6 : 0.15), lineWidth: isSelected ? 2 : 1)
+                            )
+                        Text(preset.name)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(isSelected ? preset.color.opacity(0.12) : Color.clear)
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(preset.name)
+            }
+        }
+    }
+
+    private var accentColorPreview: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Preview")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            HStack(spacing: 10) {
+                Image(systemName: "doc.text")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Sample Result")
+                        .font(.system(size: 12, weight: .semibold))
+                    Text("Tap to open")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding(8)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(selectedAccentColor.opacity(0.15))
+            )
+
+            HStack(spacing: 6) {
+                Image(systemName: "eye")
+                Text("Details")
+            }
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(selectedAccentColor.opacity(0.18))
+            )
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.primary.opacity(0.04))
+        )
     }
 
     /// Opens a folder picker and adds the selected path to indexing

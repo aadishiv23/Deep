@@ -49,11 +49,21 @@ final class AppState {
             AppLogger.info("Panel visibility: \(isPanelVisible)", category: .ui)
         }
     }
+
+    /// Whether the detail panel is enabled (persisted).
+    var isDetailPanelEnabled: Bool = true {
+        didSet {
+            guard oldValue != isDetailPanelEnabled else { return }
+            UserDefaults.standard.set(isDetailPanelEnabled, forKey: SettingsKeys.detailPanelEnabled)
+            AppLogger.info("Detail panel enabled: \(isDetailPanelEnabled)", category: .ui)
+        }
+    }
     
     init() {
         let stored = UserDefaults.standard.bool(forKey: Keys.hasCompletedSetup)
         self.hasCompletedSetup = stored
         self.mode = stored ? .main : .setup
+        self.isDetailPanelEnabled = UserDefaults.standard.object(forKey: SettingsKeys.detailPanelEnabled) as? Bool ?? true
     }
 
     func completeSetup() {
